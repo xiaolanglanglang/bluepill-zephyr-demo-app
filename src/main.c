@@ -55,7 +55,7 @@ void main(void)
     while (1)
     {
         gpio_pin_set(dev, PIN, (int)led_is_on);
-        printk("led status: %d\r\n",led_is_on);
+        printk("led status: %d\r\n", led_is_on);
         led_is_on = !led_is_on;
         k_msleep(LED_SLEEP_TIME_MS);
     }
@@ -101,12 +101,13 @@ void dht11(void)
 
     while (true)
     {
+        k_sleep(K_SECONDS(2));
         int rc = sensor_sample_fetch(dht11);
 
         if (rc != 0)
         {
             printk("Sensor fetch failed: %d\n", rc);
-            break;
+            continue;
         }
 
         struct sensor_value temperature;
@@ -122,14 +123,13 @@ void dht11(void)
         if (rc != 0)
         {
             printk("get failed: %d\n", rc);
-            break;
+            continue;
         }
 
         printf("[%s]: %.1f Cel ; %.1f %%RH\n",
                now_str(),
                sensor_value_to_double(&temperature),
                sensor_value_to_double(&humidity));
-        k_sleep(K_SECONDS(2));
     }
 }
 
