@@ -11,4 +11,23 @@
 		label = "DHT11";
 		dio-gpios = <&gpioa 1 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>;
 	};
+
+};
+
+&i2c1 {
+	ssd1306@3c {
+		compatible = "solomon,ssd1306fb";
+		reg = <0x3c>;
+		label = "SSD1306";
+		width = <128>;
+		height = <32>;
+		segment-offset = <0>;
+		page-offset = <0>;
+		display-offset = <0>;
+		multiplex-ratio = <31>;
+		segment-remap;
+		com-invdir;
+		com-sequential;
+		prechargep = <0x22>;
+	};
 };
