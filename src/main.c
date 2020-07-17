@@ -8,7 +8,9 @@
 #include <stdio.h>
 #include <device.h>
 #include <devicetree.h>
+#include <string.h>
 #include <drivers/gpio.h>
+#include <drivers/uart.h>
 #include <drivers/sensor.h>
 #include <display/cfb.h>
 
@@ -221,3 +223,43 @@ void display(void)
 }
 
 K_THREAD_DEFINE(display_id, STACKSIZE, display, NULL, NULL, NULL, PRIORITY, 0, 0);
+
+void uart_rx_handler(struct device *dev)
+{
+    static u8_t buffer[1024];
+    static int pos = 0;
+    static u8_t tmp_buff[128];
+    uart_irq_update(dev);
+    if (uart_irq_rx_ready(dev))
+    {
+        int data_length = uart_fifo_read(dev, tmp_buff, sizeof(tmp_buff));
+        for (int i = 0; i < data_length; i++)
+        {
+            buffer[pos + i] = tmp_buff[i];
+        }
+        pos += data_length;
+    }
+    if (buffer[pos - 1] == '\n')
+    {
+        buffer[pos] = 0;
+        printk("%s", buffer);
+        pos = 0;
+    }
+};
+
+void uart(void)
+{
+    struct device *uart;
+
+    // uart setup
+    uart = device_get_binding("UART_1");
+    if (!uart)
+    {
+        printk("Cannot find myuart uart(%s)!\n", "UART_1");
+        return;
+    }
+    uart_irq_callback_set(uart, uart_rx_handler);
+    uart_irq_rx_enable(uart);
+}
+
+K_THREAD_DEFINE(uart_id, STACKSIZE, uart, NULL, NULL, NULL, PRIORITY, 0, 0);
